@@ -2,12 +2,13 @@
 from langchain_openai import ChatOpenAI
 from langchain_core.tools import tool
 from langchain.agents import create_agent
+import glob
 
 @tool
-def write_text_file(file: str, text: str) -> str:
-    """Write text to a text file."""
-    f = open(file, mode='w')
-    f.write(text)
+def find_text_files() -> str:
+    """Return a comma-separated string of all files ending with .txt in the current directory."""
+    txt_files = glob.glob("*.txt")
+    return ', '.join(txt_files)
 
 @tool
 def read_text_file(file: str) -> str:
@@ -15,9 +16,15 @@ def read_text_file(file: str) -> str:
     f = open(file, mode='r')
     return f.read()
 
-tools = [write_text_file, read_text_file]
-model = ChatOpenAI(model="gpt-4", api_key='')
-system_prompt = ("You are a helpful assistant that reads the contents of text files, and then shares your transformation of these contents in an output text file")
+@tool
+def write_text_file(file: str, text: str) -> str:
+    """Write text to a text file."""
+    f = open(file, mode='w')
+    f.write(text)
+
+tools = [find_text_files ,write_text_file, read_text_file]
+model = ChatOpenAI(model="gpt-5", api_key='')
+system_prompt = ("You are a helpful assistant that reads the contents of text files in the current directory, and then shares your analysis of these contents in an output text file")
 agent = create_agent(model=model, tools=tools, system_prompt=system_prompt)
    
 human_prompt = input("Give the AI Agent instructions: \n")
